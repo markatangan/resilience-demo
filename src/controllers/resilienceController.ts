@@ -16,6 +16,11 @@ class SampleController {
   //   }
   // }
 
+  constructor() {
+    this.createSample = this.createSample.bind(this);
+    this.saveMessage = this.saveMessage.bind(this);
+  }
+
   public async createSample(req: Request, res: Response): Promise<any> {
     const { to, from, body } = req.body;
 
