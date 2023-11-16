@@ -1,11 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface ISample extends Document {
-  name: string;
+export interface message extends Document {
+  to: string;
+  from: string;
+  body: string;
 }
 
-const SampleSchema: Schema = new Schema({
-  name: { type: String, required: true },
+const MessageSchema: Schema = new Schema({
+  to: { type: String, required: true },
+  from: { type: String, required: true },
+  body: { type: String, required: true },
 });
 
-export default mongoose.model<ISample>('Sample', SampleSchema);
+export default mongoose.model<message>('message', MessageSchema);
