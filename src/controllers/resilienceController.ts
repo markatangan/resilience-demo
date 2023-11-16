@@ -5,6 +5,7 @@ export interface messageParams {
   to: string;
   from: string;
   body: string;
+  retryCount: number;
 }
 class SampleController {
   // public async getSample(req: Request, res: Response): Promise<void> {
@@ -28,38 +29,42 @@ class SampleController {
       return res.status(400).json({ error: 'To, From, and body are required' });
     }
 
+    let retryCount = 0;
+
     const params:messageParams = {
       "to": to,
       "from": from,
-      "body": body
+      "body": body,
+      "retryCount": retryCount
     }
 
     try {
-      console.log('params: ', params)
       const result = await this.saveMessage(params);
       res.status(201).json(result);
     } catch (error) {
-      console.log('retryParams: ', params)
       let retry = await this.saveMessage(params)
 
       if(!retry)
-        throw error;
+        res.status(500).json({ error: 'Internal server error' });
     }
   }
 
   async saveMessage(params: messageParams){
-    console.log('params: ', params)
-    let retryCount = 0;
     const maxRetries = 3;
 
     try {
       const sample = new message(params);
       await sample.save();
+      return true;
     }catch (e){
-      if(retryCount < maxRetries) {
-        retryCount++;
-        console.log("Retry " + retryCount)
+      if(params.retryCount < maxRetries) {
+        params.retryCount++;
+        console.log('Retrying to save in database, Retry' + params.retryCount)
         await this.saveMessage(params)
+        return true
+      }else {
+        console.log('Saving in databse failed for exceeding retry limit')
+        return false
       }
     }
     return false;
